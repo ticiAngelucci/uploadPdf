@@ -1,113 +1,144 @@
-import React, { useRef, useState } from "react";
-import SignatureCanvas from "react-signature-canvas";
+import React, { useRef, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import PDFViewer from "./PDFViewer";
 import "./index.css";
 
 export default function PDFUploadForm() {
-  const sigCanvas = useRef(null);
-  const [fileUrl, setFileUrl] = useState(null);
-  const [isEmpty, setIsEmpty] = useState(true);
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
 
-  const handleClearSignature = () => {
-    sigCanvas.current.clear();
-    setIsEmpty(true);
-  };
+  // 🔲 Dibuja la grilla al montar el canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
 
-  const handleSaveSignature = () => {
-    if (!sigCanvas.current.isEmpty()) {
-      // 📁 Imagen Base64
-      const dataURL = sigCanvas.current.getTrimmedCanvas().toDataURL("image/png");
+    const width = canvas.width;
+    const height = canvas.height;
+    const cellSize = 20; // tamaño de cada celda
 
-      // 📊 Puntos crudos (coordenadas, tiempo, velocidad, presión)
-      const puntos = sigCanvas.current.toData();
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 0.5;
 
-      console.log("📄 Imagen Base64:", dataURL);
-      console.log("📊 Puntos de la firma:", puntos);
+    for (let x = 0; x <= width; x += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= height; y += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+  }, []);
 
-      alert("✅ Firma guardada (ver consola para imagen y datos crudos)");
-    } else {
-      alert("✋ Por favor, dibuja una firma antes de guardar.");
+  // 📍 Función para empezar a dibujar
+  const startDrawing = (e) => {
+    const { offsetX, offsetY } = getCoordinates(e);
+    setIsDrawing(true);
+    setLastPos({ x: offsetX, y: offsetY });
+
+    // Vibra al comenzar
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setFileUrl(url);
+  // ✏️ Función para dibujar mientras se arrastra
+  const draw = (e) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const { offsetX, offsetY } = getCoordinates(e);
+
+    ctx.strokeStyle = "#1976d2";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x, lastPos.y);
+    ctx.lineTo(offsetX, offsetY);
+    ctx.stroke();
+
+    setLastPos({ x: offsetX, y: offsetY });
+  };
+
+  // 🖌️ Función para dejar de dibujar
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  // 📐 Función para obtener coordenadas tanto en mouse como touch
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+
+    if (e.touches) {
+      return {
+        offsetX: e.touches[0].clientX - rect.left,
+        offsetY: e.touches[0].clientY - rect.top,
+      };
+    } else {
+      return {
+        offsetX: e.nativeEvent.offsetX,
+        offsetY: e.nativeEvent.offsetY,
+      };
     }
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      {/* Sección de Firma */}
-      <div
+      <h2>Dibujá sobre la grilla 📐</h2>
+
+      <canvas
+        ref={canvasRef}
+        width={300}
+        height={400}
         style={{
-          margin: "30px 0",
-          border: "1px solid #ddd",
-          padding: "10px",
+          border: "1px solid #ccc",
+          backgroundColor: "#fff",
+          touchAction: "none",
+        }}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+      ></canvas>
+
+      <Button
+        variant="contained"
+        color="primary"
+        style={{ marginTop: "20px" }}
+        onClick={() => {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // Redibuja la grilla después de borrar
+          const cellSize = 20;
+          ctx.strokeStyle = "#e0e0e0";
+          ctx.lineWidth = 0.5;
+          for (let x = 0; x <= canvas.width; x += cellSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+          }
+          for (let y = 0; y <= canvas.height; y += cellSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+          }
         }}
       >
-        <h2>Área de Firma</h2>
-
-        {/* Área de firma accesible */}
-        <SignatureCanvas
-          ref={sigCanvas}
-          penColor="black"
-          canvasProps={{
-            width: 800,
-            height: 300,
-            className: "signature-canvas",
-            role: "application",
-            "aria-label":
-              "Área de firma.",
-            "aria-describedby": "signature-instructions",
-            tabIndex: 0,
-            style: {
-              border: "1px solid black",
-              width: "100%",
-              height: "300px",
-              touchAction: "none",
-            },
-          }}
-          onEnd={() => setIsEmpty(sigCanvas.current.isEmpty())}
-        />
-
-        {/* Botones */}
-        <div style={{ marginTop: "10px" }}>
-          <Button
-            onClick={handleClearSignature}
-            variant="outlined"
-            color="error"
-            size="small"
-            sx={{ marginRight: "10px" }}
-          >
-            Limpiar
-          </Button>
-          <Button
-            onClick={handleSaveSignature}
-            variant="contained"
-            color="primary"
-            size="small"
-            disabled={isEmpty}
-          >
-            Guardar Firma
-          </Button>
-        </div>
-
-        {/* Texto oculto para lectores de pantalla */}
-        <div
-          id="signature-instructions"
-          style={{ display: "none" }}
-          aria-hidden="true"
-        >
-          Para firmar, use su dedo o lápiz óptico para dibujar su firma en el área blanca.
-        </div>
-      </div>
-
-      {/* Visor de PDF */}
-      {fileUrl && <PDFViewer fileUrl={fileUrl} />}
+        Borrar dibujo
+      </Button>
     </div>
   );
 }
