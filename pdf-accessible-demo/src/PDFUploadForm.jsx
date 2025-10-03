@@ -95,7 +95,7 @@ export default function PDFUploadForm() {
                     className="signature-canvas" 
                     ref={canvasRef} 
                     height={1000} // Altura visible
-                    style={{ border: '1px solid black', width: '100%', height: '200px', touchAction: 'none' }}
+                    style={{ border: '1px solid black', width: '100%', height: '1000px', touchAction: 'none' }}
                     // Atributos de accesibilidad para TalkBack
                     role="img" 
                     aria-label="Área de firma, toque y arrastre para firmar."
