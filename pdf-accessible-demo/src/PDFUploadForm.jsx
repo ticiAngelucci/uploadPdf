@@ -7,7 +7,7 @@ import SignaturePad from 'signature_pad'; // 2. Importamos la librería Signatur
 export default function PDFUploadForm() {
     const [fileUrl, setFileUrl] = useState(null);
     const [name, setName] = useState(""); // Estado para el InputBase
-    
+
     // --- Lógica de SignaturePad ---
     const canvasRef = useRef(null);
     const signaturePadRef = useRef(null);
@@ -16,7 +16,7 @@ export default function PDFUploadForm() {
     useEffect(() => {
         if (canvasRef.current) {
             const canvas = canvasRef.current;
-            
+
             // Ajuste de resolución para evitar pixelación en pantallas de alta densidad
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             canvas.width = canvas.offsetWidth * ratio;
@@ -29,7 +29,7 @@ export default function PDFUploadForm() {
                 penColor: 'rgb(0, 0, 0)',
                 onEnd: () => setIsEmpty(signaturePadRef.current.isEmpty()),
             });
-            
+
             signaturePadRef.current = signaturePad;
         }
 
@@ -70,64 +70,70 @@ export default function PDFUploadForm() {
 
     const TEXT_FIELD_ID = "document-name-input";
     const customInputStyles = {
-        backgroundColor: "white", 
-        fontSize: "12px", 
-        fontFamily: "robotoMedium", 
-        height: "30px", 
-        color: "black", 
-        borderRadius: 0, 
+        backgroundColor: "white",
+        fontSize: "12px",
+        fontFamily: "robotoMedium",
+        height: "30px",
+        color: "black",
+        borderRadius: 0,
         border: "1px solid #ccc",
         padding: '0 8px',
-        "&:hover": { backgroundColor: "white", borderColor: "#316094" } 
+        "&:hover": { backgroundColor: "white", borderColor: "#316094" }
     };
 
     return (
         <div style={{ padding: '20px' }}>
             {/* Sección de Subida de Documento */}
-         
+
 
             {/* Sección de Firma (Canvas) */}
             <div style={{ margin: '30px 0', border: '1px solid #ddd', padding: '10px' }}>
                 <h2>Área de Firma</h2>
-                
+
                 {/* Canvas de Firma */}
-                <canvas 
-                    className="signature-canvas" 
-                    ref={canvasRef} 
-                    height={1000} // Altura visible
-                    style={{ border: '1px solid black', width: '100%', height: '1000px', touchAction: 'none' }}
-                    // Atributos de accesibilidad para TalkBack
-                    role="img" 
-                    aria-label="Área de firma, toque y arrastre para firmar."
+                <canvas
+                    className="signature-canvas"
+                    ref={canvasRef}
+                    height={1000}
+                    style={{
+                        border: '1px solid black',
+                        width: '100%',
+                        height: '1000px',
+                        touchAction: 'none'
+                    }}
+                    role="application"
+                    aria-label="Área de firma. Toque dos veces y mantenga para firmar con el dedo."
                     aria-describedby="signature-instructions"
+                    tabIndex="0"
                 />
+
 
                 {/* Botones de control de firma */}
                 <div style={{ marginTop: '10px' }}>
-                    <Button 
-                        onClick={handleClearSignature} 
-                        variant="outlined" 
-                        color="error" 
-                        size="small" 
+                    <Button
+                        onClick={handleClearSignature}
+                        variant="outlined"
+                        color="error"
+                        size="small"
                         sx={{ marginRight: '10px' }}
                     >
                         Limpiar
                     </Button>
-                    <Button 
-                        onClick={handleSaveSignature} 
-                        variant="contained" 
-                        color="primary" 
+                    <Button
+                        onClick={handleSaveSignature}
+                        variant="contained"
+                        color="primary"
                         size="small"
                         disabled={isEmpty}
                     >
                         Guardar Firma
                     </Button>
                 </div>
-                
+
                 {/* Instrucciones ARIA (Ocultas visualmente) */}
-                <div 
-                    id="signature-instructions" 
-                    style={{ display: 'none' }} 
+                <div
+                    id="signature-instructions"
+                    style={{ display: 'none' }}
                     aria-hidden="true"
                 >
                     Para firmar, use su dedo o lápiz óptico para dibujar la firma en el área blanca.
