@@ -64,6 +64,9 @@ export default function PDFUploadForm() {
     ctx.stroke();
 
     setLastPos({ x: offsetX, y: offsetY });
+    if (navigator.vibrate) {
+    navigator.vibrate(10); // vibra 10ms cada vez que se traza un segmento
+  }
   };
 
   // 🖌️ Función para dejar de dibujar
