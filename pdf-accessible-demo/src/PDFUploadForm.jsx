@@ -39,11 +39,6 @@ export default function PDFUploadForm() {
     const { offsetX, offsetY } = getCoordinates(e);
     setIsDrawing(true);
     setLastPos({ x: offsetX, y: offsetY });
-
-    // Vibra al comenzar
-    if (navigator.vibrate) {
-      navigator.vibrate(30);
-    }
   };
 
   // ✏️ Función para dibujar mientras se arrastra
@@ -64,9 +59,6 @@ export default function PDFUploadForm() {
     ctx.stroke();
 
     setLastPos({ x: offsetX, y: offsetY });
-    if (navigator.vibrate) {
-    navigator.vibrate(10); // vibra 10ms cada vez que se traza un segmento
-  }
   };
 
   // 🖌️ Función para dejar de dibujar
