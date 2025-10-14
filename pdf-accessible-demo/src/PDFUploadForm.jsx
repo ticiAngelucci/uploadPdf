@@ -122,7 +122,6 @@ export default function PDFUploadForm() {
           const canvas = canvasRef.current;
           const ctx = canvas.getContext("2d");
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          // Redibuja la grilla después de borrar
           const cellSize = 20;
           ctx.strokeStyle = "#e0e0e0";
           ctx.lineWidth = 0.5;
